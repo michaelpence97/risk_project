@@ -1,8 +1,10 @@
-class InsolationIndex:
-    """Takes angle of solar incidence relative to the horizontal (ground) in degrees
-     and outputs Insolation Index. First requirement for Turner's method."""
-    def __init__(self, incidence):
+class Stability:
+    def __init__(self, incidence, cloud_cover, ceiling_height, time, wind_speed):
         self.beta = incidence
+        self._U = wind_speed
+        self.CC = cloud_cover
+        self.time = time
+        self.H = ceiling_height
 
     def calculate_insolation_index(self):
         if self.beta < 15:
@@ -14,22 +16,8 @@ class InsolationIndex:
         else:
             return 4
 
-
-class NRI(InsolationIndex):
-    """
-    Class to retrieve the Normalized Response Index
-    Uses angle of solar incidence to calculate Insolation Index using parent class.
-    Adjusts Insolation Index according to cloud cover expressed as a percent, the ceiling height
-    in feet.
-    The time of day is compared to the time at which the sun rises and sets to determine whether
-    it is nighttime. Sunrise and sunset are currently just placeholders, and the specific times will need
-    to be input later when I actually look them up.
-    """
-    def __init__(self, incidence, cloud_cover, ceiling_height, time):
-        super().__init__(incidence)
-        self.CC = cloud_cover
-        self.time = time
-        self.H = ceiling_height
+    """Takes angle of solar incidence relative to the horizontal (ground) in degrees
+         and outputs Insolation Index. First requirement for Turner's method."""
 
     def nighttime(self):
         if sunrise + 1 < self.time < sunset - 1:
@@ -38,7 +26,7 @@ class NRI(InsolationIndex):
             return True
 
     def calculate_nri(self):
-        insolation_index = super().calculate_insolation_index()
+        insolation_index = self.calculate_insolation_index()
         if self.CC == 100 and self.H < 7000:
             return 0
         else:
@@ -63,14 +51,18 @@ class NRI(InsolationIndex):
                     else:
                         return insolation_index
 
-
-class Stability(NRI):
-    def __init__(self, incidence, cloud_cover, ceiling_height, time, wind_speed):
-        super().__init__(incidence, cloud_cover, ceiling_height, time)
-        self._U = wind_speed
+    """
+        Functions to retrieve the Normalized Response Index
+        Uses angle of solar incidence to calculate Insolation Index using parent class.
+        Adjusts Insolation Index according to cloud cover expressed as a percent, the ceiling height
+        in feet.
+        The time of day is compared to the time at which the sun rises and sets to determine whether
+        it is nighttime. Sunrise and sunset are currently just placeholders, and the specific times will need
+        to be input later when I actually look them up.
+        """
 
     def calculate_stability(self):
-        nri = super().calculate_nri()
+        nri = self.calculate_nri()
         speed = self._U
         if 0 <= speed < 0.8:
             if nri == -2:
@@ -216,23 +208,23 @@ class Sigma_y(Stability):
     def create_function(self):
         sc = super().calculate_stability()
         if sc == 'A':
-            def sigmay(x):
-                return .22 * x * pow((1 + 0.0001 * x), -0.5)
+            def sigmay(d):
+                return .22 * d * pow((1 + 0.0001 * d), -0.5)
         elif sc == 'B':
-            def sigmay(x):
-                return .16 * x * pow((1 + 0.0001 * x), -0.5)
+            def sigmay(d):
+                return .16 * d * pow((1 + 0.0001 * d), -0.5)
         elif sc == 'C':
-            def sigmay(x):
-                return .11 * x * pow((1 + 0.0001 * x), -0.5)
+            def sigmay(d):
+                return .11 * d * pow((1 + 0.0001 * d), -0.5)
         elif sc == 'D':
-            def sigmay(x):
-                return .08 * x * pow((1 + 0.0001 * x), -0.5)
+            def sigmay(d):
+                return .08 * d * pow((1 + 0.0001 * d), -0.5)
         elif sc == 'E':
-            def sigmay(x):
-                return .06 * x * pow((1 + 0.0001 * x), -0.5)
+            def sigmay(d):
+                return .06 * d * pow((1 + 0.0001 * d), -0.5)
         else:
-            def sigmay(x):
-                return .04 * x * pow((1 + 0.0001 * x), -0.5)
+            def sigmay(d):
+                return .04 * d * pow((1 + 0.0001 * d), -0.5)
         return sigmay
 
     def calculate_sigma_y(self):
@@ -249,23 +241,23 @@ class Sigma_z(Stability):
     def create_function(self):
         sc = super().calculate_stability()
         if sc == 'A':
-            def sigmaz(x):
-                return 0.2 * x
+            def sigmaz(d):
+                return 0.2 * d
         elif sc == 'B':
-            def sigmaz(x):
-                return 0.12 * x
+            def sigmaz(d):
+                return 0.12 * d
         elif sc == 'C':
-            def sigmaz(x):
-                return .08 * x * pow((1 + 0.0002 * x), -0.5)
+            def sigmaz(d):
+                return .08 * d * pow((1 + 0.0002 * d), -0.5)
         elif sc == 'D':
-            def sigmaz(x):
-                return .06 * x * pow((1 + 0.0015 * x), -0.5)
+            def sigmaz(d):
+                return .06 * d * pow((1 + 0.0015 * d), -0.5)
         elif sc == 'E':
-            def sigmaz(x):
-                return .03 * x * pow((1 + 0.0003 * x), -1)
+            def sigmaz(d):
+                return .03 * d * pow((1 + 0.0003 * d), -1)
         else:
-            def sigmaz(x):
-                return .016 * x * pow((1 + 0.0003 * x), -1)
+            def sigmaz(d):
+                return .016 * d * pow((1 + 0.0003 * d), -1)
         return sigmaz
 
     def calculate_sigma_z(self):
