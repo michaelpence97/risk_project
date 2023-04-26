@@ -23,11 +23,11 @@ if not all_cleaned_data_exists:
     subprocess.run([sys.executable, "data_cleaning.py"])
 
 # Sensitivity analysis variables
-stack_heights_sets = [((10, 10), (20, 20)), ((30, 30), (40, 40)), ((50, 50), (60, 60))]
+stack_heights_sets = [(5, 800), (5, 1100), (5, 1400), (50, 800), (50, 1100), (50, 1400), (100, 800), (100, 1100), (100, 1400)]
 plume_coordinates_sets = [((0, 0), (0, 0), (0, 0), (0, 0)), ((-100, 0), (-100, 0), (-100, 0), (-100, 0)), ((100, 0), (100, 0), (100, 0), (100, 0))]
 uncontrolled_start = datetime.datetime(2023, 4, 23, 18, 0)
 uncontrolled_end = datetime.datetime(2023, 4, 23, 18, 30)
-controlled_start_times = [datetime.datetime(2023, 4, 23, 15, 0), datetime.datetime(2023, 4, 23, 15, 30), datetime.datetime(2023, 4, 23, 16, 0)]
+controlled_start_times = [datetime.datetime(2023, 2, 6, 15, 0), datetime.datetime(2023, 2, 6, 16, 0), datetime.datetime(2023, 2, 6, 17, 0), datetime.datetime(2023, 2, 6, 18, 0)]
 
 # Initialize a counter for unique scenario output folder names
 scenario_counter = 0
@@ -55,6 +55,7 @@ def run_single_scenario(stack_heights, plume_coordinates, controlled_start):
 
 
 # Loop through all combinations of sensitivity analysis variables and run scenarios in parallel
+os.makedirs("output", exist_ok=True)
 scenario_output_folders = []
 with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
     futures = []

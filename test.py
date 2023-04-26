@@ -2,14 +2,11 @@ import os
 import pandas as pd
 import datetime
 from RunningForScenario import run_scenario
+import time
 
-# Ensure the Cleaned_Data folder exists
-if not os.path.exists("Cleaned_Data"):
-    os.makedirs("Cleaned_Data")
 
-# Check if cleaned data exists, otherwise run data_cleaning.py
-if not os.path.isfile("Cleaned_Data/cleaned_demographic_data.xlsx"):
-    os.system("python data_cleaning.py")
+start_time = time.time()
+
 
 
 fcarstart = datetime.datetime(2023, 2, 6, 16, 30)
@@ -31,7 +28,7 @@ car_times = (carstart, carstop)
 ethylcar_times = (ethylcarstart, ethylcarstop)
 butylcar_times = (butylcarstart, butylcarstop)
 
-stack_heights = (100, 800)
+stack_heights = (100, 800) #form is (uncontrolled_h, controlled_h)
 scenario_output_folder = "Test_Scenario_Output"
 run_scenario(
     fcar,
@@ -45,3 +42,6 @@ run_scenario(
     stack_heights,
     scenario_output_folder,
 )
+
+elapsed_time = time.time() - start_time
+print(f"Execution time: {elapsed_time:.2f} seconds")

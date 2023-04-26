@@ -6,8 +6,6 @@ import datetime
 import random
 import time
 
-
-
 solar_data = pd.read_excel('Initial_Data/EPSolar (1) (1).xlsx')
 flows_and_rates = pd.read_excel('Initial_Data/flows and decomposition rates.xlsx')
 weather_data = pd.read_excel('Initial_Data/BVI_METAR_data.xlsx')
@@ -24,6 +22,32 @@ flows_and_rates = flows_and_rates.drop(columns=['description', 'unit', 'Q ', 'k 
 
 mask = flows_and_rates['plume name'].str.contains('dioxin')
 flows_and_rates = flows_and_rates[~mask].reset_index(drop=True)
+
+# Step 1: Add a new "settling" column with a default value of 0 for existing plumes in flows_and_rates
+flows_and_rates["settling"] = 0
+
+# Step 2: Define the values for PM2.5 and PM10
+pm25_plume_name = "PM2.5"
+pm25_release_rate = 1.033 * 10 ** (-12)  # Set PM2.5 release rate
+pm25_decay_rate = 0  # Set PM2.5 decay rate
+pm25settling = .0002 #m/s
+
+pm10_plume_name = "PM10"
+pm10_release_rate = 2.06667 * 10 ** (-12)  # Set PM10 release rate
+pm10_decay_rate = 0  # Set PM10 decay rate
+pm10settling = .005 #m/s
+
+# Create a new DataFrame for PM2.5 and PM10
+pm_data = pd.DataFrame({
+    "plume name": [pm25_plume_name, pm10_plume_name],
+    "Q (kg/s)": [pm25_release_rate, pm10_release_rate],
+    "k (per sec)": [pm25_decay_rate, pm10_decay_rate],
+    "settling": [pm25settling, pm10settling]
+})
+
+# Append the new DataFrame to the original flows_and_rates DataFrame
+flows_and_rates = flows_and_rates.append(pm_data, ignore_index=True)
+
 
 # Define the map origin
 origin_lat = 40.8360864
@@ -457,10 +481,10 @@ modified_weather_final['stability_class'] = modified_weather_final.apply(calcula
 
 compounds = ["Total Vinyl Chloride", "Total HCl 100%", "Total HCl 52%", "Total HCl 20%", "Total Phosgene 7",
                  "Total Phosgene 0.7", "Total Phosgene 0.07", "ethyl_acryl_100", "ethyl_acryl_80", "ethyl_acryl_50",
-                 "ethyl_acryl_20", "butyl_acryl"]
-PAC1 = [640, 2.7, 2.7, 2.7, .11, .11, .11, 110, 110, 110, 110, 43]  #mg/m3
-PAC2 = [3100, 33, 33, 33, 1.2, 1.2, 1.2, 870, 870, 870, 870, 680]
-PAC3 = [12000, 150, 150, 150, 3, 3, 3, 1100, 1100, 1100, 1100, 2500]
+                 "ethyl_acryl_20", "butyl_acryl", "PM2.5", "PM10"]
+PAC1 = [640, 2.7, 2.7, 2.7, .11, .11, .11, 110, 110, 110, 110, 43, .035, .12]  #mg/m3
+PAC2 = [3100, 33, 33, 33, 1.2, 1.2, 1.2, 870, 870, 870, 870, 680, .035, .15]
+PAC3 = [12000, 150, 150, 150, 3, 3, 3, 1100, 1100, 1100, 1100, 2500, .035, .15]
 exposure_limits = pd.DataFrame({'Compounds': compounds, 'PAC1': PAC1, 'PAC2': PAC2, 'PAC3': PAC3})
 
 

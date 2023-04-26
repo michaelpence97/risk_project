@@ -12,7 +12,8 @@ import os
 from tqdm import tqdm
 
 
-def create_plume_locations(fcar, car, ethylcar, butylcar, fcar_times, car_times, ethylcar_times, butylcar_times, stack_heights):
+def create_plume_locations(fcar, car, ethylcar, butylcar,
+                           fcar_times, car_times, ethylcar_times, butylcar_times, stack_heights):
     fcarx, fcary = fcar
     carx, cary = car
     ethylcarx, ethylcary = ethylcar
@@ -33,14 +34,24 @@ def create_plume_locations(fcar, car, ethylcar, butylcar, fcar_times, car_times,
         'stack_height': []
     }
 
-    for i in range(19):
+    for i in range(21):
         plume_data['plume_name'].append(f"plume_{i+1}")
 
-    plume_x_coords = [fcarx, carx, ethylcarx, ethylcarx, ethylcarx, ethylcarx, butylcarx, fcarx, fcarx, fcarx, carx, carx, carx, fcarx, fcarx, fcarx, carx, carx, carx]
-    plume_y_coords = [fcary, cary, ethylcary, ethylcary, ethylcary, ethylcary, butylcary, fcary, fcary, fcary, cary, cary, cary, fcary, fcary, fcary, cary, cary, cary]
-    plume_start_times = [fcar_start, car_start, ethylcar_start, ethylcar_start, ethylcar_start, ethylcar_start, butylcar_start, fcar_start, fcar_start, fcar_start, car_start, car_start, car_start, fcar_start, fcar_start, fcar_start, car_start, car_start, car_start]
-    plume_end_times = [fcar_end, car_end, ethylcar_end, ethylcar_end, ethylcar_end, ethylcar_end, butylcar_end, fcar_end, fcar_end, fcar_end, car_end, car_end, car_end, fcar_end, fcar_end, fcar_end, car_end, car_end, car_end]
-    stack_heights = [controlled_h, controlled_h, uncontrolled_h, uncontrolled_h, uncontrolled_h, uncontrolled_h, uncontrolled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h]
+    plume_x_coords = [fcarx, carx, ethylcarx, ethylcarx, ethylcarx, ethylcarx, butylcarx, fcarx, fcarx, fcarx, carx,
+                      carx, carx, fcarx, fcarx, fcarx, carx, carx, carx, butylcarx, butylcarx]
+    plume_y_coords = [fcary, cary, ethylcary, ethylcary, ethylcary, ethylcary, butylcary, fcary, fcary, fcary, cary,
+                      cary, cary, fcary, fcary, fcary, cary, cary, cary, butylcary, butylcary]
+    plume_start_times = [fcar_start, car_start, ethylcar_start, ethylcar_start, ethylcar_start, ethylcar_start,
+                         butylcar_start, fcar_start, fcar_start, fcar_start, car_start, car_start, car_start,
+                         fcar_start, fcar_start, fcar_start, car_start, car_start, car_start,
+                         butylcar_start, butylcar_start]
+    plume_end_times = [fcar_end, car_end, ethylcar_end, ethylcar_end, ethylcar_end, ethylcar_end, butylcar_end,
+                       fcar_end, fcar_end, fcar_end, car_end, car_end, car_end, fcar_end, fcar_end, fcar_end, car_end,
+                       car_end, car_end, butylcar_end, butylcar_end]
+    stack_heights = [controlled_h, controlled_h, uncontrolled_h, uncontrolled_h, uncontrolled_h, uncontrolled_h,
+                     uncontrolled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h,
+                     controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h,
+                     controlled_h, controlled_h]
 
     plume_data['X'] = plume_x_coords
     plume_data['Y'] = plume_y_coords
@@ -123,7 +134,20 @@ def VinylChloride(Q, U, h, x, y, z, decay, sigmaY, sigmaZ):
                math.exp(-0.5 * pow(y / sigmaY, 2)) * \
                (math.exp(-0.5 * pow((z - h) / sigmaZ, 2)) + math.exp(-0.5 * pow((z + h) / sigmaZ, 2)))
 
-
+def plumewithsettling(Q, U, h, x, y, z, sigmaY, sigmaZ, vg):
+    def tilted_center_line(U, x, vg):
+        return h + vg * x / U
+    if x <= 0:
+        return 0
+    if sigmaY <= 0:
+        sigmaY = 1e-6
+    if sigmaZ <= 0:
+        sigmaZ = 1e-6
+    if U == 0:
+        return 0
+    else:
+        concentration = (Q / U) * pow(2*math.pi*sigmaY*sigmaZ, -1)* math.exp(-0.5*pow(y/sigmaY, 2)) * math.exp(-0.5*pow(z - tilted_center_line(U, x, vg) / sigmaZ, 2))
+        return concentration
 def get_concentrations_dict(demographic_data, weather_final, flows_and_rates, plume_locations):
     stopwatch = time.time()
     plume_locations_df = pd.DataFrame(plume_locations)
@@ -160,11 +184,19 @@ def get_concentrations_dict(demographic_data, weather_final, flows_and_rates, pl
                 sigmaZ = Sigma_z(stability, downwind_distance)
                 release_rate = row_p["Q (kg/s)"]
                 decay_rate = row_p["k (per sec)"]
+                vg = row_p["settling"]
+                if vg == 0:
+                    if index_c >= start_time and index_c <= end_time:
+                        concentration = VinylChloride(release_rate, wind_speed, h, downwind_distance,
+                                                      crosswind_distance, 0, decay_rate, sigmaY, sigmaZ)
+                    else:
+                        concentration = 0
 
-                if index_c >= start_time and index_c <= end_time:
-                    concentration = VinylChloride(release_rate, wind_speed, h, downwind_distance, crosswind_distance, 0, decay_rate, sigmaY, sigmaZ)
                 else:
-                    concentration = 0
+                    if index_c >= start_time and index_c <= end_time:
+                        concentration = plumewithsettling(release_rate, wind_speed, h, downwind_distance,
+                                                          crosswind_distance, 0, sigmaY, sigmaZ, vg)
+                    else: concentration = 0
 
                 source_name = row_p["plume name"]
                 concentration_data.loc[index_c, source_name] = concentration
@@ -198,7 +230,7 @@ def add_time_weighted_averages(concentrations_dict):
 
         for interval in time_intervals:
             for compound in ["Total Vinyl Chloride", "Total HCl 100%", "Total HCl 52%", "Total HCl 20%", "Total Phosgene 7", "Total Phosgene 0.7",
-                             "Total Phosgene 0.07", "ethyl_acryl_100", "ethyl_acryl_80", "ethyl_acryl_50", "ethyl_acryl_20", "butyl_acryl"]:
+                             "Total Phosgene 0.07", "ethyl_acryl_100", "ethyl_acryl_80", "ethyl_acryl_50", "ethyl_acryl_20", "butyl_acryl", "PM2.5", "PM10"]:
                 # Create a new DataFrame to store the rolling sum and time
                 rolling_data = pd.DataFrame(index=concentration_data.index)
                 rolling_data['rolling_sum'] = (concentration_data[compound] * time_diffs).cumsum()
@@ -217,14 +249,17 @@ def add_time_weighted_averages(concentrations_dict):
 def create_twa_dataframes(concentrations_dict, exposure_limits):
     compounds = ["Total Vinyl Chloride", "Total HCl 100%", "Total HCl 52%", "Total HCl 20%", "Total Phosgene 7",
                  "Total Phosgene 0.7", "Total Phosgene 0.07", "ethyl_acryl_100", "ethyl_acryl_80", "ethyl_acryl_50",
-                 "ethyl_acryl_20", "butyl_acryl"]
+                 "ethyl_acryl_20", "butyl_acryl", "PM2.5", "PM10"]
 
     twa_dataframes = {}
 
     start_time = time.time()
 
     for compound in tqdm(compounds, desc="Processing compounds"):
-        twa_column = f"{compound} TWA 60 min"
+        if compound in ["PM2.5", "PM10"]:
+            twa_column = f"{compound} TWA 1440 min"
+        else:
+            twa_column = f"{compound} TWA 60 min"
 
         # Get the corresponding PAC values from exposure_limits
         pac1_value = exposure_limits.loc[exposure_limits['Compounds'] == compound, 'PAC1'].values[0]

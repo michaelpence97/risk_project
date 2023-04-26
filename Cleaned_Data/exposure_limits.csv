@@ -1,13 +1,15 @@
 ,Compounds,PAC1,PAC2,PAC3
-0,Total Vinyl Chloride,640.0,3100.0,12000
-1,Total HCl 100%,2.7,33.0,150
-2,Total HCl 52%,2.7,33.0,150
-3,Total HCl 20%,2.7,33.0,150
-4,Total Phosgene 7,0.11,1.2,3
-5,Total Phosgene 0.7,0.11,1.2,3
-6,Total Phosgene 0.07,0.11,1.2,3
-7,ethyl_acryl_100,110.0,870.0,1100
-8,ethyl_acryl_80,110.0,870.0,1100
-9,ethyl_acryl_50,110.0,870.0,1100
-10,ethyl_acryl_20,110.0,870.0,1100
-11,butyl_acryl,43.0,680.0,2500
+0,Total Vinyl Chloride,640.0,3100.0,12000.0
+1,Total HCl 100%,2.7,33.0,150.0
+2,Total HCl 52%,2.7,33.0,150.0
+3,Total HCl 20%,2.7,33.0,150.0
+4,Total Phosgene 7,0.11,1.2,3.0
+5,Total Phosgene 0.7,0.11,1.2,3.0
+6,Total Phosgene 0.07,0.11,1.2,3.0
+7,ethyl_acryl_100,110.0,870.0,1100.0
+8,ethyl_acryl_80,110.0,870.0,1100.0
+9,ethyl_acryl_50,110.0,870.0,1100.0
+10,ethyl_acryl_20,110.0,870.0,1100.0
+11,butyl_acryl,43.0,680.0,2500.0
+12,PM2.5,0.035,0.035,0.035
+13,PM10,0.12,0.15,0.15
