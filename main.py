@@ -25,8 +25,8 @@ if not all_cleaned_data_exists:
 # Sensitivity analysis variables
 stack_heights_sets = [(5, 800), (5, 1100), (5, 1400), (50, 800), (50, 1100), (50, 1400), (100, 800), (100, 1100), (100, 1400)]
 plume_coordinates_sets = [((0, 0), (0, 0), (0, 0), (0, 0)), ((-100, 0), (-100, 0), (-100, 0), (-100, 0)), ((100, 0), (100, 0), (100, 0), (100, 0))]
-uncontrolled_start = datetime.datetime(2023, 4, 23, 18, 0)
-uncontrolled_end = datetime.datetime(2023, 4, 23, 18, 30)
+uncontrolled_start = datetime.datetime(2023, 2, 3, 20, 45)
+uncontrolled_end = datetime.datetime(2023, 2, 7, 17, 0)
 controlled_start_times = [datetime.datetime(2023, 2, 6, 15, 0), datetime.datetime(2023, 2, 6, 16, 0), datetime.datetime(2023, 2, 6, 17, 0), datetime.datetime(2023, 2, 6, 18, 0)]
 
 # Initialize a counter for unique scenario output folder names
