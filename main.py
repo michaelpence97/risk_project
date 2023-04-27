@@ -57,7 +57,7 @@ def run_single_scenario(stack_heights, plume_coordinates, controlled_start):
 # Loop through all combinations of sensitivity analysis variables and run scenarios in parallel
 os.makedirs("output", exist_ok=True)
 scenario_output_folders = []
-with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+with ThreadPoolExecutor(max_workers=4) as executor:
     futures = []
     for stack_heights in stack_heights_sets:
         for plume_coordinates in plume_coordinates_sets:

@@ -1,0 +1,8 @@
+pandas
+matplotlib
+Pillow
+tqdm
+seaborn
+numpy
+
+

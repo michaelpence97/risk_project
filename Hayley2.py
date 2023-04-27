@@ -12,7 +12,7 @@ controlled_stop = datetime.datetime(2023, 2, 6, 17, 0)
 uncontrolled_start = datetime.datetime(2023, 2, 3, 20, 45)
 uncontrolled_stop = datetime.datetime(2023, 2, 7, 17, 0)
 
-plume_x = 0
+plume_x = -250
 plume_origin_on_map = (plume_x, 0)
 fcar = plume_origin_on_map
 car = plume_origin_on_map
@@ -40,7 +40,7 @@ def log_scenario_data(scenario_name, controlled_start, controlled_stop, plume_x,
         writer.writerow([scenario_name, controlled_start, controlled_stop, plume_x, stack_heights[0], stack_heights[1]])
 
 
-scenario_output_folder = "Scenario 01"
+scenario_output_folder = "Scenario 02"
 run_scenario(
     fcar,
     car,

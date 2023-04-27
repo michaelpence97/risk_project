@@ -1,14 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
-from math import radians, exp, sin, cos, atan2, sqrt
-import datetime
 import time
-import imageio
-import seaborn as sns
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
-import os
 from tqdm import tqdm
 
 
@@ -34,24 +27,29 @@ def create_plume_locations(fcar, car, ethylcar, butylcar,
         'stack_height': []
     }
 
-    for i in range(21):
+    for i in range(29):
         plume_data['plume_name'].append(f"plume_{i+1}")
 
-    plume_x_coords = [fcarx, carx, ethylcarx, ethylcarx, ethylcarx, ethylcarx, butylcarx, fcarx, fcarx, fcarx, carx,
+    plume_x_coords = [fcarx, carx, ethylcarx, ethylcarx, ethylcarx, ethylcarx, butylcarx, fcarx, fcarx, fcarx, fcarx,
+                      fcarx, fcarx, fcarx, fcarx, fcarx, fcarx, fcarx, carx,
                       carx, carx, fcarx, fcarx, fcarx, carx, carx, carx, butylcarx, butylcarx]
-    plume_y_coords = [fcary, cary, ethylcary, ethylcary, ethylcary, ethylcary, butylcary, fcary, fcary, fcary, cary,
+    plume_y_coords = [fcary, cary, ethylcary, ethylcary, ethylcary, ethylcary, butylcary, fcary, fcary, fcary, fcary,
+                      fcary, fcary, fcary, fcary, fcary, fcary, fcary, cary,
                       cary, cary, fcary, fcary, fcary, cary, cary, cary, butylcary, butylcary]
     plume_start_times = [fcar_start, car_start, ethylcar_start, ethylcar_start, ethylcar_start, ethylcar_start,
-                         butylcar_start, fcar_start, fcar_start, fcar_start, car_start, car_start, car_start,
+                         butylcar_start, fcar_start, fcar_start, fcar_start, fcar_start,
+                         fcar_start, fcar_start, fcar_start, fcar_start, fcar_start, fcar_start, fcar_start, car_start, car_start, car_start,
                          fcar_start, fcar_start, fcar_start, car_start, car_start, car_start,
                          butylcar_start, butylcar_start]
     plume_end_times = [fcar_end, car_end, ethylcar_end, ethylcar_end, ethylcar_end, ethylcar_end, butylcar_end,
+                       fcar_end, fcar_end, fcar_end, fcar_end, fcar_end, fcar_end, fcar_end, fcar_end,
                        fcar_end, fcar_end, fcar_end, car_end, car_end, car_end, fcar_end, fcar_end, fcar_end, car_end,
                        car_end, car_end, butylcar_end, butylcar_end]
     stack_heights = [controlled_h, controlled_h, uncontrolled_h, uncontrolled_h, uncontrolled_h, uncontrolled_h,
                      uncontrolled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h,
                      controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h,
-                     controlled_h, controlled_h]
+                     controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h, controlled_h,
+                     controlled_h, controlled_h, controlled_h]
 
     plume_data['X'] = plume_x_coords
     plume_data['Y'] = plume_y_coords
@@ -212,6 +210,8 @@ def get_concentrations_dict(demographic_data, weather_final, flows_and_rates, pl
         for x in [7, 0.7, 0.07]:
             x_str = f'{x:.2f}'.rstrip('0').rstrip('.')
             concentration_data[f'Total Phosgene {x_str}'] = concentration_data[f'phos_4_{x_str}'] + concentration_data[f'phos_1_{x_str}']
+        for x in [100, 80, 50, 20]:
+            concentration_data[f'Total Dioxin {x}%'] = concentration_data[f'dioxin_4_{x}'] + concentration_data[f'dioxin_1_{x}']
 
     stopwatch2 = time.time()
     elapsed_time = stopwatch2 - stopwatch
@@ -229,8 +229,11 @@ def add_time_weighted_averages(concentrations_dict):
         time_diffs = concentration_data.index.to_series().diff().fillna(pd.Timedelta(0)) / np.timedelta64(1, 'm')
 
         for interval in time_intervals:
-            for compound in ["Total Vinyl Chloride", "Total HCl 100%", "Total HCl 52%", "Total HCl 20%", "Total Phosgene 7", "Total Phosgene 0.7",
-                             "Total Phosgene 0.07", "ethyl_acryl_100", "ethyl_acryl_80", "ethyl_acryl_50", "ethyl_acryl_20", "butyl_acryl", "PM2.5", "PM10"]:
+            for compound in ["Total Vinyl Chloride", "Total HCl 100%", "Total HCl 52%", "Total HCl 20%",
+                             "Total Phosgene 7", "Total Phosgene 0.7",
+                             "Total Phosgene 0.07", "ethyl_acryl_100",
+                             "ethyl_acryl_80", "ethyl_acryl_50", "ethyl_acryl_20", "butyl_acryl", "PM2.5",
+                             "PM10", "Total Dioxin 20%", "Total Dioxin 50%", "Total Dioxin 80%", "Total Dioxin 100%"]:
                 # Create a new DataFrame to store the rolling sum and time
                 rolling_data = pd.DataFrame(index=concentration_data.index)
                 rolling_data['rolling_sum'] = (concentration_data[compound] * time_diffs).cumsum()
@@ -249,7 +252,8 @@ def add_time_weighted_averages(concentrations_dict):
 def create_twa_dataframes(concentrations_dict, exposure_limits):
     compounds = ["Total Vinyl Chloride", "Total HCl 100%", "Total HCl 52%", "Total HCl 20%", "Total Phosgene 7",
                  "Total Phosgene 0.7", "Total Phosgene 0.07", "ethyl_acryl_100", "ethyl_acryl_80", "ethyl_acryl_50",
-                 "ethyl_acryl_20", "butyl_acryl", "PM2.5", "PM10"]
+                 "ethyl_acryl_20", "butyl_acryl", "PM2.5", "PM10", "Total Dioxin 20%", "Total Dioxin 50%",
+                 "Total Dioxin 80%", "Total Dioxin 100%"]
 
     twa_dataframes = {}
 

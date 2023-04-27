@@ -12,7 +12,7 @@ controlled_stop = datetime.datetime(2023, 2, 6, 17, 0)
 uncontrolled_start = datetime.datetime(2023, 2, 3, 20, 45)
 uncontrolled_stop = datetime.datetime(2023, 2, 7, 17, 0)
 
-plume_x = 0
+plume_x = 250
 plume_origin_on_map = (plume_x, 0)
 fcar = plume_origin_on_map
 car = plume_origin_on_map
@@ -24,7 +24,7 @@ car_times = (controlled_start, controlled_stop)
 ethylcar_times = (uncontrolled_start, uncontrolled_stop)
 butylcar_times = (uncontrolled_start, uncontrolled_stop)
 
-stack_heights = (100, 800) #form is (uncontrolled_h, controlled_h)
+stack_heights = (50, 1100) #form is (uncontrolled_h, controlled_h)
 
 def log_scenario_data(scenario_name, controlled_start, controlled_stop, plume_x, stack_heights):
     log_file = "scenario_log.csv"
@@ -40,7 +40,7 @@ def log_scenario_data(scenario_name, controlled_start, controlled_stop, plume_x,
         writer.writerow([scenario_name, controlled_start, controlled_stop, plume_x, stack_heights[0], stack_heights[1]])
 
 
-scenario_output_folder = "Scenario 01"
+scenario_output_folder = "Scenario 18"
 run_scenario(
     fcar,
     car,

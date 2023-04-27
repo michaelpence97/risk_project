@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
-from math import radians, exp, sin, cos, atan2, sqrt
+from math import radians, sin, cos, atan2, sqrt
 import os
-import datetime
 import random
-import time
 
 solar_data = pd.read_excel('Initial_Data/EPSolar (1) (1).xlsx')
 flows_and_rates = pd.read_excel('Initial_Data/flows and decomposition rates.xlsx')
@@ -20,11 +18,13 @@ flows_and_rates['k (per sec)'] = flows_and_rates['k (per hour)'] / 3600
 # Remove 'description' and 'unit' columns from the flows_and_rates DataFrame
 flows_and_rates = flows_and_rates.drop(columns=['description', 'unit', 'Q ', 'k (per hour)'])
 
-mask = flows_and_rates['plume name'].str.contains('dioxin')
-flows_and_rates = flows_and_rates[~mask].reset_index(drop=True)
-
 # Step 1: Add a new "settling" column with a default value of 0 for existing plumes in flows_and_rates
 flows_and_rates["settling"] = 0
+
+mask = flows_and_rates['plume name'].str.contains('dioxin')
+flows_and_rates.loc[mask, 'settling'] = 0.005
+
+
 
 # Step 2: Define the values for PM2.5 and PM10
 pm25_plume_name = "PM2.5"
@@ -109,8 +109,8 @@ weather_data[cloud_height_columns] = weather_data[cloud_height_columns].apply(pd
 # Define cloud cover codes for estimating mixing height and overall cloud cover
 cloud_cover_codes = {
     'CLR': 0,
-    'SCT': 25,
-    'BKN': 50,
+    'SCT': 33,
+    'BKN': 67,
     'OVC': 100
 }
 
@@ -481,10 +481,11 @@ modified_weather_final['stability_class'] = modified_weather_final.apply(calcula
 
 compounds = ["Total Vinyl Chloride", "Total HCl 100%", "Total HCl 52%", "Total HCl 20%", "Total Phosgene 7",
                  "Total Phosgene 0.7", "Total Phosgene 0.07", "ethyl_acryl_100", "ethyl_acryl_80", "ethyl_acryl_50",
-                 "ethyl_acryl_20", "butyl_acryl", "PM2.5", "PM10"]
-PAC1 = [640, 2.7, 2.7, 2.7, .11, .11, .11, 110, 110, 110, 110, 43, .035, .12]  #mg/m3
-PAC2 = [3100, 33, 33, 33, 1.2, 1.2, 1.2, 870, 870, 870, 870, 680, .035, .15]
-PAC3 = [12000, 150, 150, 150, 3, 3, 3, 1100, 1100, 1100, 1100, 2500, .035, .15]
+                 "ethyl_acryl_20", "butyl_acryl", "PM2.5", "PM10", "Total Dioxin 20%", "Total Dioxin 50%",
+             "Total Dioxin 80%", "Total Dioxin 100%"]
+PAC1 = [640, 2.7, 2.7, 2.7, .11, .11, .11, 110, 110, 110, 110, 43, .035, .12, .00013, .00013, .00013, .00013]  #mg/m3
+PAC2 = [3100, 33, 33, 33, 1.2, 1.2, 1.2, 870, 870, 870, 870, 680, .035, .15, .0014, .0014, .0014, .0014]
+PAC3 = [12000, 150, 150, 150, 3, 3, 3, 1100, 1100, 1100, 1100, 2500, .035, .15, .0085, .0085, .0085, .0085]
 exposure_limits = pd.DataFrame({'Compounds': compounds, 'PAC1': PAC1, 'PAC2': PAC2, 'PAC3': PAC3})
 
 

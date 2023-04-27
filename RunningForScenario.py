@@ -1,20 +1,14 @@
 import pandas as pd
-import seaborn as sns
-import numpy as np
 from matplotlib.ticker import ScalarFormatter
 import os
 import glob
 from PIL import Image
-from matplotlib.colors import ListedColormap
 from datetime import datetime
 from tqdm import tqdm
-import matplotlib.pyplot as plt
-from Get_concentrations_and_HQs import create_plume_locations, PlumeCoordinateTransform, Sigma_y, Sigma_z, \
-    VinylChloride, get_concentrations_dict, add_time_weighted_averages, create_twa_dataframes
+from Get_concentrations_and_HQs import create_plume_locations, get_concentrations_dict, add_time_weighted_averages, create_twa_dataframes
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-from matplotlib.ticker import FuncFormatter
 import seaborn as sns
 
 # Load cleaned data
@@ -95,7 +89,7 @@ def generate_cumulative_hazard_index_heatmap(demographic_data, column, output_pa
     plt.figure(figsize=(10, 10))
     scatter_plot = plt.gca()  # Get the current axes object
 
-    scaling_factor = 50  # Adjust this value to change the size of the scatter points
+    scaling_factor = 100  # Adjust this value to change the size of the scatter points
     scatter_points = scatter_plot.scatter(
         demographic_data["x"],
         demographic_data["y"],
@@ -113,15 +107,6 @@ def generate_cumulative_hazard_index_heatmap(demographic_data, column, output_pa
     cbar = plt.colorbar(scatter_points, format=formatter)
     cbar.ax.yaxis.set_major_formatter(formatter)
 
-    #Add a legend for population=dot size
-    min_population = demographic_data['Total Population'].min()
-    max_population = demographic_data['Total Population'].max()
-    population_quantiles = np.quantile(demographic_data["Total Population"], [0.25, 0.5, 0.75])
-    population_sizes = [min_population]+list(population_quantiles)+[max_population]
-    legend_elements = [plt.Line2D([0], [0], marker = 'o', color = 'w', label = f'{int(size)} people',
-                                  markersize=size / 100 *scaling_factor,
-                                  markeredgecolor = 'k') for size in population_sizes]
-    scatter_plot.legend(handles = legend_elements, loc = 'upper left', title='Census Block Group Population')
 
 
     scatter_plot.set_xlabel("East-West Distance from Source (m)")
